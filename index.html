@@ -1,0 +1,536 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Style-Type" content="text/css">
+  <title></title>
+  <meta name="Generator" content="Cocoa HTML Writer">
+  <meta name="CocoaVersion" content="2575.3">
+  <style type="text/css">
+    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica}
+    p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica; min-height: 14.0px}
+  </style>
+</head>
+<body>
+<p class="p1">&lt;!DOCTYPE html&gt;</p>
+<p class="p1">&lt;html lang="en"&gt;</p>
+<p class="p1">&lt;head&gt;</p>
+<p class="p1">&lt;meta charset="UTF-8"/&gt;</p>
+<p class="p1">&lt;meta name="viewport" content="width=device-width, initial-scale=1.0"/&gt;</p>
+<p class="p1">&lt;title&gt;Loan Origination Platform — Honeycomb Demo&lt;/title&gt;</p>
+<p class="p1">&lt;script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.development.js"&gt;&lt;/script&gt;</p>
+<p class="p1">&lt;script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.development.js"&gt;&lt;/script&gt;</p>
+<p class="p1">&lt;script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"&gt;&lt;/script&gt;</p>
+<p class="p1">&lt;style&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>*{box-sizing:border-box;margin:0;padding:0}</p>
+<p class="p1"><span class="Apple-converted-space">  </span>body{background:#0f0f14;color:#e2e8f0;font-family:monospace;font-size:12px;height:100vh;overflow:hidden}</p>
+<p class="p1"><span class="Apple-converted-space">  </span>input[type=range]{cursor:pointer}</p>
+<p class="p1"><span class="Apple-converted-space">  </span>select,input,button{font-family:monospace}</p>
+<p class="p1"><span class="Apple-converted-space">  </span>::-webkit-scrollbar{width:6px;height:6px}</p>
+<p class="p1"><span class="Apple-converted-space">  </span>::-webkit-scrollbar-track{background:#0f0f14}</p>
+<p class="p1"><span class="Apple-converted-space">  </span>::-webkit-scrollbar-thumb{background:#2d2d44;border-radius:3px}</p>
+<p class="p1">&lt;/style&gt;</p>
+<p class="p1">&lt;/head&gt;</p>
+<p class="p1">&lt;body&gt;</p>
+<p class="p1">&lt;div id="root"&gt;&lt;/div&gt;</p>
+<p class="p1">&lt;script type="text/babel"&gt;</p>
+<p class="p1">const { useState, useEffect, useRef, useCallback } = React;</p>
+<p class="p2"><br></p>
+<p class="p1">const LOAN_TYPES = ["30yr Fixed","15yr Fixed","ARM 5/1","FHA","VA","Jumbo","HELOC"];</p>
+<p class="p1">const BRANCHES <span class="Apple-converted-space">  </span>= ["Chicago-Loop","NYC-Midtown","LA-Downtown","Austin-North","Miami-Beach","Seattle-SLU","Dallas-Uptown","Boston-Back Bay"];</p>
+<p class="p1">const OFFICERS <span class="Apple-converted-space">  </span>= ["A.Johnson","B.Kim","C.Patel","D.Rivera","E.Smith","F.Chen","G.Torres","H.Nguyen"];</p>
+<p class="p1">const CHANNELS <span class="Apple-converted-space">  </span>= ["Online","Branch","Mobile","Broker","Referral"];</p>
+<p class="p1">const STAGES <span class="Apple-converted-space">    </span>= ["Application Intake","Identity Verification","Credit Pull","Income Verification","Underwriting","Appraisal","Offer Generated"];</p>
+<p class="p1">const FRAUD_SIG<span class="Apple-converted-space">  </span>= ["duplicate_ssn","suspicious_device","mismatched_address","velocity_check"];</p>
+<p class="p1">const ANOMALIES<span class="Apple-converted-space">  </span>= ["credit_bureau_timeout","doc_parse_failure","underwriter_queue_spike","appraisal_vendor_error","identity_api_slow"];</p>
+<p class="p1">const STAGE_CLR<span class="Apple-converted-space">  </span>= ["#6366f1","#8b5cf6","#a78bfa","#06b6d4","#f59e0b","#ef4444","#22c55e"];</p>
+<p class="p1">const FIRSTS <span class="Apple-converted-space">    </span>= ["James","Maria","Robert","Lisa","David","Sarah","Michael","Jennifer","William","Jessica"];</p>
+<p class="p1">const LASTS<span class="Apple-converted-space">      </span>= ["Anderson","Martinez","Johnson","Williams","Brown","Davis","Wilson","Taylor","Moore","Jackson"];</p>
+<p class="p1">const DC <span class="Apple-converted-space">        </span>= {APPROVE:"#22c55e",REVIEW:"#f59e0b",REJECT:"#ef4444"};</p>
+<p class="p2"><br></p>
+<p class="p1">const rand<span class="Apple-converted-space">    </span>= a<span class="Apple-converted-space">  </span>=&gt; a[Math.floor(Math.random()*a.length)];</p>
+<p class="p1">const randInt = (lo,hi) =&gt; Math.floor(Math.random()*(hi-lo+1))+lo;</p>
+<p class="p1">const randF <span class="Apple-converted-space">  </span>= (lo,hi) =&gt; +(Math.random()*(hi-lo)+lo).toFixed(2);</p>
+<p class="p1">const fmt$<span class="Apple-converted-space">    </span>= n<span class="Apple-converted-space">  </span>=&gt; "$"+n.toLocaleString();</p>
+<p class="p1">const fmtMs <span class="Apple-converted-space">  </span>= ms =&gt; ms&gt;=1000?(ms/1000).toFixed(1)+"s":ms+"ms";</p>
+<p class="p1">const getTier = s<span class="Apple-converted-space">  </span>=&gt; s&gt;=720?"Prime":s&gt;=660?"Near-Prime":"Sub-Prime";</p>
+<p class="p1">const decide<span class="Apple-converted-space">  </span>= (score,dti,hasFraud) =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">  </span>if(hasFraud) return "REJECT";</p>
+<p class="p1"><span class="Apple-converted-space">  </span>if(score&gt;720&amp;&amp;dti&lt;0.35) return "APPROVE";</p>
+<p class="p1"><span class="Apple-converted-space">  </span>if(score&lt;620||dti&gt;0.50) return "REJECT";</p>
+<p class="p1"><span class="Apple-converted-space">  </span>return "REVIEW";</p>
+<p class="p1">};</p>
+<p class="p1">function hotStage(anomaly,i){</p>
+<p class="p1"><span class="Apple-converted-space">  </span>return (anomaly==="credit_bureau_timeout"&amp;&amp;i===2)||(anomaly==="underwriter_queue_spike"&amp;&amp;i===4)||</p>
+<p class="p1"><span class="Apple-converted-space">         </span>(anomaly==="appraisal_vendor_error"&amp;&amp;i===5)||(anomaly==="identity_api_slow"&amp;&amp;i===1)||</p>
+<p class="p1"><span class="Apple-converted-space">         </span>(anomaly==="doc_parse_failure"&amp;&amp;i===3);</p>
+<p class="p1">}</p>
+<p class="p2"><br></p>
+<p class="p1">let _uid=1;</p>
+<p class="p1">function buildLoan(injectAnomaly,injectFraud){</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const score=randInt(560,840),dti=randF(0.18,0.58),ltv=randF(0.55,0.98);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const fraud=injectFraud?rand(FRAUD_SIG):"none";</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const anomaly=injectAnomaly?rand(ANOMALIES):"none";</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const stageLat=STAGES.map((_,i)=&gt;{</p>
+<p class="p1"><span class="Apple-converted-space">    </span>let b=[90,400,900,500,2200,1600,200][i];</p>
+<p class="p1"><span class="Apple-converted-space">    </span>if(anomaly==="credit_bureau_timeout"&amp;&amp;i===2)b=randInt(9000,16000);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>if(anomaly==="underwriter_queue_spike"&amp;&amp;i===4)b=randInt(14000,28000);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>if(anomaly==="appraisal_vendor_error"&amp;&amp;i===5)b=randInt(11000,22000);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>if(anomaly==="identity_api_slow"&amp;&amp;i===1)b=randInt(5000,12000);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>if(anomaly==="doc_parse_failure"&amp;&amp;i===3)b=randInt(4000,8000);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>return Math.max(40,b+randInt(-80,200));</p>
+<p class="p1"><span class="Apple-converted-space">  </span>});</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const totalDur=stageLat.reduce((a,b)=&gt;a+b,0);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const loanType=rand(LOAN_TYPES),branch=rand(BRANCHES),officer=rand(OFFICERS),channel=rand(CHANNELS);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const amount=randInt(85000,2800000);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const decision=decide(score,dti,fraud!=="none");</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const status=(anomaly!=="none"&amp;&amp;Math.random()&gt;0.45)||fraud!=="none"?"error":"success";</p>
+<p class="p1"><span class="Apple-converted-space">  </span>return {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>id:"LN-"+String(_uid++).padStart(5,"0"),</p>
+<p class="p1"><span class="Apple-converted-space">    </span>traceId:Math.random().toString(16).slice(2).padEnd(32,"0"),</p>
+<p class="p1"><span class="Apple-converted-space">    </span>applicant:rand(FIRSTS)+" "+rand(LASTS),</p>
+<p class="p1"><span class="Apple-converted-space">    </span>applicantId:"APP-"+randInt(10000,99999),</p>
+<p class="p1"><span class="Apple-converted-space">    </span>ts:new Date(),loanType,branch,officer,channel,amount,</p>
+<p class="p1"><span class="Apple-converted-space">    </span>score,dti,ltv,fraud,anomaly,stageLat,totalDur,status,decision,</p>
+<p class="p1"><span class="Apple-converted-space">    </span>tier:getTier(score),</p>
+<p class="p1"><span class="Apple-converted-space">    </span>riskScore:Math.round(100-score/10+dti*80+ltv*30+(fraud!=="none"?40:0)),</p>
+<p class="p1"><span class="Apple-converted-space">    </span>_sent:false,</p>
+<p class="p1"><span class="Apple-converted-space">  </span>};</p>
+<p class="p1">}</p>
+<p class="p2"><br></p>
+<p class="p1">function loanToEvents(l){</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const rootId=Math.random().toString(16).slice(2,18);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>let off=0;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const evts=[{time:l.ts.toISOString(),data:{</p>
+<p class="p1"><span class="Apple-converted-space">    </span>name:"loan.origination","trace.trace_id":l.traceId,"trace.span_id":rootId,</p>
+<p class="p1"><span class="Apple-converted-space">    </span>duration_ms:l.totalDur,status:l.status,decision:l.decision,</p>
+<p class="p1"><span class="Apple-converted-space">    </span>"loan.type":l.loanType,"loan.amount_usd":l.amount,"loan.officer":l.officer,</p>
+<p class="p1"><span class="Apple-converted-space">    </span>"branch.id":l.branch,channel:l.channel,"applicant.id":l.applicantId,</p>
+<p class="p1"><span class="Apple-converted-space">    </span>"applicant.credit_score":l.score,"applicant.credit_tier":l.tier,</p>
+<p class="p1"><span class="Apple-converted-space">    </span>"applicant.dti_ratio":l.dti,"applicant.ltv_ratio":l.ltv,</p>
+<p class="p1"><span class="Apple-converted-space">    </span>"risk.score":l.riskScore,"fraud.signal":l.fraud,"anomaly.type":l.anomaly,</p>
+<p class="p1"><span class="Apple-converted-space">    </span>"service.name":"loan-origination-platform",</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}}];</p>
+<p class="p1"><span class="Apple-converted-space">  </span>STAGES.forEach((stage,i)=&gt;{</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const sid=Math.random().toString(16).slice(2,18),d=l.stageLat[i],isHot=hotStage(l.anomaly,i);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>evts.push({time:new Date(l.ts.getTime()+off).toISOString(),data:{</p>
+<p class="p1"><span class="Apple-converted-space">      </span>name:stage.toLowerCase().replace(/ /g,"_"),"trace.trace_id":l.traceId,</p>
+<p class="p1"><span class="Apple-converted-space">      </span>"trace.span_id":sid,"trace.parent_id":rootId,duration_ms:d,</p>
+<p class="p1"><span class="Apple-converted-space">      </span>"stage.name":stage,"stage.index":i,"stage.is_anomalous":isHot,</p>
+<p class="p1"><span class="Apple-converted-space">      </span>status:isHot&amp;&amp;l.status==="error"?"error":"ok",</p>
+<p class="p1"><span class="Apple-converted-space">      </span>"loan.type":l.loanType,"branch.id":l.branch,"loan.officer":l.officer,</p>
+<p class="p1"><span class="Apple-converted-space">      </span>"service.name":"loan-origination-platform",</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}});</p>
+<p class="p1"><span class="Apple-converted-space">    </span>off+=d;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>});</p>
+<p class="p1"><span class="Apple-converted-space">  </span>return evts;</p>
+<p class="p1">}</p>
+<p class="p2"><br></p>
+<p class="p1">const C = {</p>
+<p class="p1"><span class="Apple-converted-space">  </span>card:{background:"#1a1a2e",border:"1px solid #2d2d44",borderRadius:8,padding:12},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>inp:{background:"#0f0f14",color:"#e2e8f0",border:"1px solid #374151",borderRadius:4,padding:"5px 8px",fontFamily:"monospace",fontSize:11,boxSizing:"border-box",width:"100%"},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>lbl:{color:"#6b7280",fontSize:10,display:"block",marginBottom:3},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>tag:c=&gt;({display:"inline-block",padding:"1px 6px",borderRadius:3,fontSize:10,fontWeight:"bold",background:c+"22",color:c,border:"1px solid "+c+"55"}),</p>
+<p class="p1"><span class="Apple-converted-space">  </span>pill:ok=&gt;({display:"inline-block",padding:"2px 8px",borderRadius:10,fontSize:10,fontWeight:"bold",background:ok?"#14532d":"#450a0a",color:ok?"#86efac":"#fca5a5"}),</p>
+<p class="p1">};</p>
+<p class="p2"><br></p>
+<p class="p1">function SpanBar({lat,anomaly}){</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const total=lat.reduce((a,b)=&gt;a+b,0);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>return &lt;div style={{display:"flex",width:"100%",height:6,borderRadius:3,overflow:"hidden",gap:1}}&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>{lat.map((d,i)=&gt;&lt;div key={i} style={{width:(d/total*100)+"%",background:hotStage(anomaly,i)?"#ef4444":STAGE_CLR[i],minWidth:1}}/&gt;)}</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;/div&gt;;</p>
+<p class="p1">}</p>
+<p class="p1">function Stat({label,val,sub,color}){</p>
+<p class="p1"><span class="Apple-converted-space">  </span>return &lt;div style={{...C.card,textAlign:"center"}}&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div style={{fontSize:22,fontWeight:"bold",color:color||"#e2e8f0"}}&gt;{val}&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div style={{fontSize:10,color:"#9ca3af"}}&gt;{label}&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>{sub&amp;&amp;&lt;div style={{fontSize:9,color:"#6b7280",marginTop:2}}&gt;{sub}&lt;/div&gt;}</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;/div&gt;;</p>
+<p class="p1">}</p>
+<p class="p1">function HBar({label,val,max,color,right}){</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const c=color||"#6366f1";</p>
+<p class="p1"><span class="Apple-converted-space">  </span>return &lt;div style={{display:"flex",alignItems:"center",gap:6,fontSize:11,marginBottom:2}}&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div style={{width:110,color:"#9ca3af",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}&gt;{label}&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div style={{flex:1,background:"#0f0f14",borderRadius:3,height:12,overflow:"hidden",position:"relative"}}&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;div style={{position:"absolute",left:0,width:Math.min(100,val/(max||1)*100)+"%",height:"100%",background:c,transition:"width .3s"}}/&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div style={{width:64,textAlign:"right",fontFamily:"monospace",color:c,fontSize:10}}&gt;{right!==undefined?right:val}&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;/div&gt;;</p>
+<p class="p1">}</p>
+<p class="p2"><br></p>
+<p class="p1">function TabPipeline({loans}){</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const n=loans.length||1,byD={APPROVE:0,REVIEW:0,REJECT:0},byT={Prime:0,"Near-Prime":0,"Sub-Prime":0},byC={};</p>
+<p class="p1"><span class="Apple-converted-space">  </span>let tAmt=0,aAmt=0;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>loans.forEach(l=&gt;{</p>
+<p class="p1"><span class="Apple-converted-space">    </span>byD[l.decision]=(byD[l.decision]||0)+1;byT[l.tier]=(byT[l.tier]||0)+1;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>byC[l.channel]=(byC[l.channel]||0)+1;tAmt+=l.amount;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>if(l.decision==="APPROVE")aAmt+=l.amount;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>});</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const ar=(byD.APPROVE/n*100).toFixed(1);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const avgD=loans.length?Math.round(loans.reduce((a,l)=&gt;a+l.totalDur,0)/loans.length):0;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const fr=loans.filter(l=&gt;l.fraud!=="none").length;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>return &lt;div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:10,marginBottom:12}}&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;Stat label="Applications" val={loans.length}/&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;Stat label="Approval Rate" val={ar+"%"} color={parseFloat(ar)&gt;60?"#22c55e":"#f59e0b"}/&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;Stat label="Pipeline Value" val={"$"+(tAmt/1e6).toFixed(1)+"M"} color="#a78bfa"/&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;Stat label="Fraud Signals" val={fr} color={fr&gt;0?"#ef4444":"#22c55e"}/&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10,marginBottom:12}}&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;Stat label="Approved Value" val={"$"+(aAmt/1e6).toFixed(1)+"M"} color="#22c55e"/&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;Stat label="Avg Loan Size" val={"$"+(Math.round(tAmt/n)/1e3).toFixed(0)+"K"}/&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;Stat label="Avg Time-to-Decision" val={fmtMs(avgD)} color={avgD&gt;10000?"#ef4444":"#a78bfa"}/&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10}}&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;div style={C.card}&gt;&lt;div style={{color:"#f59e0b",fontSize:11,fontWeight:"bold",marginBottom:8}}&gt;DECISIONS&lt;/div&gt;{Object.entries(byD).map(([k,v])=&gt;&lt;HBar key={k} label={k} val={v} max={n} color={DC[k]} right={v+" ("+(v/n*100).toFixed(0)+"%)"} /&gt;)}&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;div style={C.card}&gt;&lt;div style={{color:"#f59e0b",fontSize:11,fontWeight:"bold",marginBottom:8}}&gt;CREDIT TIER&lt;/div&gt;{Object.entries(byT).map(([k,v])=&gt;&lt;HBar key={k} label={k} val={v} max={n} color={k==="Prime"?"#22c55e":k==="Near-Prime"?"#f59e0b":"#ef4444"} right={v+" ("+(v/n*100).toFixed(0)+"%)"} /&gt;)}&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;div style={C.card}&gt;&lt;div style={{color:"#f59e0b",fontSize:11,fontWeight:"bold",marginBottom:8}}&gt;CHANNEL&lt;/div&gt;{Object.entries(byC).sort((a,b)=&gt;b[1]-a[1]).map(([k,v])=&gt;&lt;HBar key={k} label={k} val={v} max={n} right={v}/&gt;)}&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;/div&gt;;</p>
+<p class="p1">}</p>
+<p class="p2"><br></p>
+<p class="p1">function TabObservability({loans}){</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const n=loans.length||1,errs=loans.filter(l=&gt;l.status==="error"),er=(errs.length/n*100).toFixed(1);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const anomalies={};</p>
+<p class="p1"><span class="Apple-converted-space">  </span>loans.forEach(l=&gt;{if(l.anomaly!=="none")anomalies[l.anomaly]=(anomalies[l.anomaly]||0)+1;});</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const sorted=[...loans].sort((a,b)=&gt;a.totalDur-b.totalDur);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const p99=loans.length?fmtMs(sorted[Math.floor(loans.length*0.99)]?.totalDur||0):"—";</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const slo=loans.length?((loans.filter(l=&gt;l.totalDur&lt;15000).length/loans.length*100).toFixed(0)+"%"):"—";</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const dims=[{key:"branch",label:"Branch",vals:BRANCHES},{key:"loanType",label:"Loan Type",vals:LOAN_TYPES},{key:"officer",label:"Officer",vals:OFFICERS},{key:"channel",label:"Channel",vals:CHANNELS}];</p>
+<p class="p1"><span class="Apple-converted-space">  </span>return &lt;div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:10,marginBottom:12}}&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;Stat label="Error Rate" val={er+"%"} color={parseFloat(er)&gt;15?"#ef4444":"#22c55e"}/&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;Stat label="Anomalies" val={Object.values(anomalies).reduce((a,b)=&gt;a+b,0)} color="#f59e0b"/&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;Stat label="p99 Latency" val={p99} color="#a78bfa"/&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;Stat label="SLO (&lt; 15s)" val={slo} color="#22c55e"/&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>{Object.keys(anomalies).length&gt;0&amp;&amp;&lt;div style={{...C.card,borderColor:"#7f1d1d",background:"#1f0a0a",marginBottom:12}}&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;div style={{color:"#ef4444",fontWeight:"bold",fontSize:11,marginBottom:8}}&gt;🔴 ACTIVE ANOMALIES — BubbleUp Signals&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6}}&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>{Object.entries(anomalies).map(([k,v])=&gt;&lt;div key={k} style={{background:"#2d0a0a",borderRadius:6,padding:"6px 10px",display:"flex",justifyContent:"space-between"}}&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;span style={{color:"#fca5a5",fontSize:11}}&gt;{k.replace(/_/g," ")}&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;span style={{color:"#ef4444",fontFamily:"monospace",fontWeight:"bold"}}&gt;{v}x&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;)}</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;}</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{dims.map(d=&gt;{</p>
+<p class="p1"><span class="Apple-converted-space">        </span>const stats=d.vals.map(v=&gt;{</p>
+<p class="p1"><span class="Apple-converted-space">          </span>const sub=loans.filter(l=&gt;l[d.key]===v),ec=sub.filter(l=&gt;l.status==="error").length;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>return{v,count:sub.length,rate:sub.length?ec/sub.length:0,avgDur:sub.length?Math.round(sub.reduce((a,l)=&gt;a+l.totalDur,0)/sub.length):0};</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}).filter(s=&gt;s.count&gt;0).sort((a,b)=&gt;b.rate-a.rate);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>return &lt;div key={d.key} style={C.card}&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;div style={{color:"#f59e0b",fontSize:11,fontWeight:"bold",marginBottom:8}}&gt;{d.label.toUpperCase()} — ERROR RATE&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>{stats.map(s=&gt;{</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const hot=s.rate&gt;0.3;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>return &lt;div key={s.v} style={{display:"flex",alignItems:"center",gap:4,fontSize:11,marginBottom:2}}&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;div style={{width:100,color:hot?"#ef4444":"#9ca3af",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}&gt;{s.v}&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;div style={{flex:1,background:"#0f0f14",borderRadius:2,height:10,overflow:"hidden",position:"relative"}}&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;div style={{position:"absolute",left:0,width:(s.rate*100)+"%",height:"100%",background:hot?"#ef4444":"#6366f1"}}/&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;div style={{width:30,textAlign:"right",color:hot?"#ef4444":"#6b7280",fontFamily:"monospace"}}&gt;{(s.rate*100).toFixed(0)}%&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;div style={{width:44,textAlign:"right",color:"#4b5563",fontFamily:"monospace",fontSize:10}}&gt;{fmtMs(s.avgDur)}&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>})}</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>})}</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;/div&gt;;</p>
+<p class="p1">}</p>
+<p class="p2"><br></p>
+<p class="p1">function TabBranch({loans}){</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const stats=BRANCHES.map(b=&gt;{</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const sub=loans.filter(l=&gt;l.branch===b),app=sub.filter(l=&gt;l.decision==="APPROVE").length,err=sub.filter(l=&gt;l.status==="error").length;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>return{b,count:sub.length,rate:sub.length?app/sub.length:0,errRate:sub.length?err/sub.length:0,avgDur:sub.length?Math.round(sub.reduce((a,l)=&gt;a+l.totalDur,0)/sub.length):0,vol:sub.reduce((a,l)=&gt;a+l.amount,0)};</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}).filter(s=&gt;s.count&gt;0).sort((a,b)=&gt;b.vol-a.vol);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>return &lt;div style={C.card}&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div style={{color:"#f59e0b",fontSize:11,fontWeight:"bold",marginBottom:10}}&gt;BRANCH PERFORMANCE&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div style={{display:"grid",gridTemplateColumns:"2fr 1fr 1fr 1fr 1fr 1fr",gap:4,fontSize:10,color:"#6b7280",marginBottom:6,paddingBottom:4,borderBottom:"1px solid #2d2d44"}}&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;span&gt;Branch&lt;/span&gt;&lt;span style={{textAlign:"right"}}&gt;Apps&lt;/span&gt;&lt;span style={{textAlign:"right"}}&gt;Approval&lt;/span&gt;&lt;span style={{textAlign:"right"}}&gt;Error Rate&lt;/span&gt;&lt;span style={{textAlign:"right"}}&gt;Avg Duration&lt;/span&gt;&lt;span style={{textAlign:"right"}}&gt;Volume&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>{stats.map(s=&gt;&lt;div key={s.b} style={{display:"grid",gridTemplateColumns:"2fr 1fr 1fr 1fr 1fr 1fr",gap:4,fontSize:11,padding:"4px 0",borderBottom:"1px solid #1a1a2e",alignItems:"center"}}&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;span style={{color:"#e2e8f0"}}&gt;{s.b}&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;span style={{textAlign:"right",color:"#9ca3af"}}&gt;{s.count}&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;span style={{textAlign:"right",color:s.rate&gt;0.6?"#22c55e":"#f59e0b"}}&gt;{(s.rate*100).toFixed(0)}%&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;span style={{textAlign:"right",color:s.errRate&gt;0.2?"#ef4444":"#9ca3af"}}&gt;{(s.errRate*100).toFixed(0)}%&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;span style={{textAlign:"right",color:s.avgDur&gt;10000?"#ef4444":"#9ca3af"}}&gt;{fmtMs(s.avgDur)}&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;span style={{textAlign:"right",color:"#a78bfa"}}&gt;${(s.vol/1e6).toFixed(1)}M&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;)}</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;/div&gt;;</p>
+<p class="p1">}</p>
+<p class="p2"><br></p>
+<p class="p1">function TabFraud({loans}){</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const flagged=loans.filter(l=&gt;l.fraud!=="none"),byType={};</p>
+<p class="p1"><span class="Apple-converted-space">  </span>flagged.forEach(l=&gt;{byType[l.fraud]=(byType[l.fraud]||0)+1;});</p>
+<p class="p1"><span class="Apple-converted-space">  </span>return &lt;div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10,marginBottom:12}}&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;Stat label="Fraud Signals" val={flagged.length} color="#ef4444"/&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;Stat label="Fraud Rate" val={loans.length?(flagged.length/loans.length*100).toFixed(1)+"%":"0%"} color={flagged.length&gt;0?"#ef4444":"#22c55e"}/&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;Stat label="Flagged Value" val={"$"+(flagged.reduce((a,l)=&gt;a+l.amount,0)/1e6).toFixed(1)+"M"} color="#ef4444"/&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>{Object.keys(byType).length&gt;0&amp;&amp;&lt;div style={{...C.card,marginBottom:12}}&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;div style={{color:"#ef4444",fontWeight:"bold",fontSize:11,marginBottom:8}}&gt;🔴 FRAUD SIGNAL BREAKDOWN&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{Object.entries(byType).sort((a,b)=&gt;b[1]-a[1]).map(([k,v])=&gt;&lt;HBar key={k} label={k.replace(/_/g," ")} val={v} max={flagged.length} color="#ef4444" right={v}/&gt;)}</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;}</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div style={C.card}&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;div style={{color:"#f59e0b",fontWeight:"bold",fontSize:11,marginBottom:8}}&gt;FLAGGED APPLICATIONS&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{flagged.length===0&amp;&amp;&lt;div style={{color:"#4b5563",textAlign:"center",padding:16}}&gt;No fraud signals detected&lt;/div&gt;}</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{flagged.slice(0,20).map(l=&gt;&lt;div key={l.id} style={{padding:"6px 0",borderBottom:"1px solid #1a1a2e",display:"grid",gridTemplateColumns:"1fr 1.5fr 1fr 1fr",gap:6,fontSize:11,alignItems:"center"}}&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;span style={{color:"#a78bfa"}}&gt;{l.id}&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;span style={{color:"#e2e8f0"}}&gt;{l.applicant}&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;span style={C.tag("#ef4444")}&gt;{l.fraud.replace(/_/g," ")}&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;span style={{color:"#9ca3af"}}&gt;{fmt$(l.amount)}&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;/div&gt;)}</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;/div&gt;;</p>
+<p class="p1">}</p>
+<p class="p2"><br></p>
+<p class="p1">function TabScenario({loans}){</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const [threshold,setThreshold]=useState(680);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const base=loans.filter(l=&gt;l.fraud==="none");</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const cur=base.filter(l=&gt;l.score&gt;=680&amp;&amp;l.dti&lt;0.45).length;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const sim=base.filter(l=&gt;l.score&gt;=threshold&amp;&amp;l.dti&lt;0.45).length;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const delta=sim-cur;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const extraVol=base.filter(l=&gt;l.score&gt;=threshold&amp;&amp;l.score&lt;680&amp;&amp;l.dti&lt;0.45).reduce((a,l)=&gt;a+l.amount,0);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const riskD=base.filter(l=&gt;l.score&gt;=threshold&amp;&amp;l.score&lt;680).length;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>return &lt;div style={{...C.card,borderColor:"#312e81"}}&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div style={{color:"#f59e0b",fontWeight:"bold",fontSize:12,marginBottom:12}}&gt;⚡ SCENARIO SIMULATOR&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;label style={C.lbl}&gt;Credit Score Threshold: &lt;span style={{color:"#f59e0b",fontWeight:"bold"}}&gt;{threshold}&lt;/span&gt;&lt;/label&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;input type="range" min={580} max={760} value={threshold} onChange={e=&gt;setThreshold(+e.target.value)} style={{width:"100%",marginBottom:4}}/&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div style={{display:"flex",justifyContent:"space-between",fontSize:9,color:"#4b5563",marginBottom:12}}&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;span&gt;580&lt;/span&gt;&lt;span&gt;680 (current)&lt;/span&gt;&lt;span&gt;760&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:10,marginBottom:12}}&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;Stat label="Current Approvals" val={cur}/&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;Stat label="Simulated" val={sim} color="#22c55e"/&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;div style={{...C.card,background:delta&gt;=0?"#052e16":"#450a0a"}}&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;div style={{fontSize:10,color:"#6b7280"}}&gt;Approval Delta&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;div style={{fontSize:20,fontWeight:"bold",color:delta&gt;=0?"#22c55e":"#ef4444"}}&gt;{delta&gt;=0?"+":""}{delta}&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;Stat label="Added Revenue" val={"$"+(extraVol/1e6).toFixed(1)+"M"} color="#a78bfa" sub={riskD+" higher-risk"}/&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div style={{padding:10,background:"#0f0f14",borderRadius:6,fontSize:11}}&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;span style={{color:"#f59e0b",fontWeight:"bold"}}&gt;Current: &lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;span style={{color:"#a78bfa",fontFamily:"monospace"}}&gt;score &amp;ge; 680 AND dti &amp;lt; 45% &amp;rarr; APPROVE&lt;/span&gt;&lt;br/&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;span style={{color:"#f59e0b",fontWeight:"bold"}}&gt;Simulated: &lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;span style={{color:"#22c55e",fontFamily:"monospace"}}&gt;score &amp;ge; {threshold} AND dti &amp;lt; 45% &amp;rarr; APPROVE&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;/div&gt;;</p>
+<p class="p1">}</p>
+<p class="p2"><br></p>
+<p class="p1">function TabCanvas({loans}){</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const [apiKey,setApiKey]=useState("hcaik_01kk2rm60qdhwg3z6enb1p3p5pBNXt9sYD7peyUsD6VvWugD");</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const [dataset,setDataset]=useState("test");</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const [apiHost,setApiHost]=useState("https://api.honeycomb.io");</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const [sending,setSending]=useState(false);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const [result,setResult]=useState(null);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const [sentCount,setSentCount]=useState(0);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const unsent=loans.filter(l=&gt;!l._sent);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const handleSend=async()=&gt;{</p>
+<p class="p1"><span class="Apple-converted-space">    </span>if(!apiKey||unsent.length===0)return;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>setSending(true);setResult(null);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>try{</p>
+<p class="p1"><span class="Apple-converted-space">      </span>const events=unsent.flatMap(loanToEvents);</p>
+<p class="p1"><span class="Apple-converted-space">      </span>const r=await fetch(apiHost+"/1/batch/"+encodeURIComponent(dataset),{method:"POST",headers:{"Content-Type":"application/json","X-Honeycomb-Team":apiKey,"x-honeycomb-team":apiKey},body:JSON.stringify(events)});</p>
+<p class="p1"><span class="Apple-converted-space">      </span>if(!r.ok)throw new Error("HTTP "+r.status);</p>
+<p class="p1"><span class="Apple-converted-space">      </span>unsent.forEach(l=&gt;{l._sent=true;});</p>
+<p class="p1"><span class="Apple-converted-space">      </span>setSentCount(c=&gt;c+unsent.length);</p>
+<p class="p1"><span class="Apple-converted-space">      </span>setResult({ok:true,msg:"Sent "+events.length+" spans ("+unsent.length+" traces)"});</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}catch(e){setResult({ok:false,msg:"Error: "+e.message});}</p>
+<p class="p1"><span class="Apple-converted-space">    </span>setSending(false);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>};</p>
+<p class="p1"><span class="Apple-converted-space">  </span>return &lt;div style={{display:"flex",flexDirection:"column",gap:12}}&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div style={{...C.card,borderColor:"#312e81"}}&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;div style={{color:"#f59e0b",fontWeight:"bold",fontSize:12,marginBottom:6}}&gt;🎨 Canvas Integration&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;div style={{color:"#9ca3af",fontSize:11,lineHeight:1.7}}&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>Once sent, open Canvas in Honeycomb and ask:&lt;br/&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;span style={{color:"#a78bfa"}}&gt;• "Which branch has the worst p99 underwriting latency?"&lt;/span&gt;&lt;br/&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;span style={{color:"#a78bfa"}}&gt;• "BubbleUp on error rate across all loan dimensions"&lt;/span&gt;&lt;br/&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;span style={{color:"#a78bfa"}}&gt;• "Show fraud signals correlated with high loan amounts"&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div style={C.card}&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;div style={{color:"#f59e0b",fontWeight:"bold",fontSize:11,marginBottom:10}}&gt;CONNECTION&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:10}}&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;label style={C.lbl}&gt;API HOST&lt;/label&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;select value={apiHost} onChange={e=&gt;setApiHost(e.target.value)} style={{...C.inp,cursor:"pointer"}}&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;option value="https://api.honeycomb.io"&gt;US&lt;/option&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;option value="https://api.eu1.honeycomb.io"&gt;EU&lt;/option&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;option value="https://api.dogfood.honeycomb.io"&gt;Dogfood&lt;/option&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;/select&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;label style={C.lbl}&gt;DATASET&lt;/label&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;input value={dataset} onChange={e=&gt;setDataset(e.target.value)} style={C.inp}/&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;div style={{marginBottom:10}}&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;label style={C.lbl}&gt;INGEST API KEY&lt;/label&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;input type="password" value={apiKey} onChange={e=&gt;setApiKey(e.target.value)} placeholder="hcaik_…" style={C.inp}/&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;span style={{fontSize:11,color:"#6b7280"}}&gt;{unsent.length} unsent · {sentCount} sent&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;button onClick={handleSend} disabled={sending||!apiKey||unsent.length===0}</p>
+<p class="p1"><span class="Apple-converted-space">          </span>style={{background:!apiKey||unsent.length===0?"#1f1f2e":"#312e81",color:!apiKey||unsent.length===0?"#4b5563":"#a78bfa",border:"1px solid #4c1d95",borderRadius:6,padding:"7px 20px",cursor:!apiKey||unsent.length===0?"not-allowed":"pointer",fontFamily:"monospace",fontWeight:"bold",fontSize:12}}&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>{sending?"Sending…":"Send "+unsent.length+" →"}</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;/button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{result&amp;&amp;&lt;div style={{marginTop:10,padding:"8px 12px",background:result.ok?"#052e16":"#450a0a",border:"1px solid "+(result.ok?"#166534":"#7f1d1d"),borderRadius:6,fontSize:11,color:result.ok?"#86efac":"#fca5a5"}}&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>{result.ok?"✅ ":"❌ "}{result.msg}</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;/div&gt;}</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;/div&gt;;</p>
+<p class="p1">}</p>
+<p class="p2"><br></p>
+<p class="p1">function TraceDetail({loan,onClose}){</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const total=loan.stageLat.reduce((a,b)=&gt;a+b,0);let off=0;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>return &lt;div style={{position:"fixed",top:0,right:0,width:460,height:"100vh",background:"#0f0f14",borderLeft:"1px solid #2d2d44",overflowY:"auto",zIndex:100,padding:16}}&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;span style={{color:"#a78bfa",fontWeight:"bold",fontSize:14}}&gt;{loan.id}&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;button onClick={onClose} style={{background:"none",border:"none",color:"#6b7280",fontSize:18,cursor:"pointer"}}&gt;✕&lt;/button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:12}}&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;span style={C.tag(DC[loan.decision])}&gt;{loan.decision}&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;span style={C.pill(loan.status==="success")}&gt;{loan.status.toUpperCase()}&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{loan.fraud!=="none"&amp;&amp;&lt;span style={C.tag("#ef4444")}&gt;⚠ {loan.fraud.replace(/_/g," ")}&lt;/span&gt;}</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{loan.anomaly!=="none"&amp;&amp;&lt;span style={C.tag("#f59e0b")}&gt;{loan.anomaly.replace(/_/g," ")}&lt;/span&gt;}</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div style={{...C.card,marginBottom:10}}&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;div style={{color:"#f59e0b",fontSize:11,fontWeight:"bold",marginBottom:8}}&gt;OTel ATTRIBUTES&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:4}}&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>{[["applicant.name",loan.applicant],["applicant.id",loan.applicantId],["applicant.credit_score",loan.score],["applicant.credit_tier",loan.tier],["applicant.dti_ratio",loan.dti],["applicant.ltv_ratio",loan.ltv],["risk.score",loan.riskScore],["channel",loan.channel],["branch.id",loan.branch],["loan.officer",loan.officer],["loan.type",loan.loanType],["loan.amount_usd",fmt$(loan.amount)]].map(([k,v])=&gt;&lt;div key={k} style={{background:"#0f0f14",borderRadius:4,padding:"4px 8px"}}&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;div style={{color:"#6b7280",fontSize:9}}&gt;{k}&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;div style={{color:"#e2e8f0",fontSize:11}}&gt;{v}&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;)}</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div style={C.card}&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;div style={{color:"#f59e0b",fontSize:11,fontWeight:"bold",marginBottom:8}}&gt;TRACE WATERFALL&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{STAGES.map((stage,i)=&gt;{</p>
+<p class="p1"><span class="Apple-converted-space">        </span>const d=loan.stageLat[i],l=(off/total*100),w=(d/total*100),isHot=hotStage(loan.anomaly,i);off+=d;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>return &lt;div key={stage} style={{display:"flex",alignItems:"center",gap:6,marginBottom:4}}&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;div style={{width:130,color:isHot?"#ef4444":"#9ca3af",fontSize:11}}&gt;{stage}&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;div style={{flex:1,background:"#0f0f14",borderRadius:3,height:16,position:"relative"}}&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;div style={{position:"absolute",left:l+"%",width:w+"%",height:"100%",background:isHot?"#ef4444":STAGE_CLR[i],borderRadius:3,minWidth:2}}/&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;div style={{width:52,textAlign:"right",fontFamily:"monospace",fontSize:11,color:isHot?"#ef4444":"#6b7280"}}&gt;{fmtMs(d)}&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>})}</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;div style={{borderTop:"1px solid #2d2d44",marginTop:8,paddingTop:8,color:"#6b7280",textAlign:"right",fontSize:11}}&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>Total: &lt;span style={{color:"#e2e8f0"}}&gt;{fmtMs(total)}&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;/div&gt;;</p>
+<p class="p1">}</p>
+<p class="p2"><br></p>
+<p class="p1">const TABS=[</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{id:"pipeline",label:"📊 Pipeline"},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{id:"observability",label:"🔬 Observability"},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{id:"branch",label:"🏦 Branch"},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{id:"fraud",label:"🔴 Fraud"},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{id:"scenario",label:"⚡ Scenario"},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{id:"canvas",label:"🎨 Canvas"},</p>
+<p class="p1">];</p>
+<p class="p2"><br></p>
+<p class="p1">function App(){</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const [loans,setLoans]=useState([]);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const [running,setRunning]=useState(false);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const [anomalyRate,setAnomalyRate]=useState(20);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const [fraudRate,setFraudRate]=useState(8);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const [tps,setTps]=useState(1);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const [tab,setTab]=useState("pipeline");</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const [selected,setSelected]=useState(null);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const [search,setSearch]=useState("");</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const intervalRef=useRef(null);</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>const addLoan=useCallback(()=&gt;{</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const a=Math.random()*100&lt;anomalyRate,f=Math.random()*100&lt;fraudRate;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>setLoans(prev=&gt;[buildLoan(a,f),...prev].slice(0,500));</p>
+<p class="p1"><span class="Apple-converted-space">  </span>},[anomalyRate,fraudRate]);</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>useEffect(()=&gt;{</p>
+<p class="p1"><span class="Apple-converted-space">    </span>if(running){intervalRef.current=setInterval(addLoan,1000/tps);}</p>
+<p class="p1"><span class="Apple-converted-space">    </span>else clearInterval(intervalRef.current);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>return()=&gt;clearInterval(intervalRef.current);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>},[running,tps,addLoan]);</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>const filtered=search?loans.filter(l=&gt;l.id.includes(search.toUpperCase())||l.applicant.toLowerCase().includes(search.toLowerCase())||l.branch.toLowerCase().includes(search.toLowerCase())):loans;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const selectedLoan=loans.find(l=&gt;l.id===selected);</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>return &lt;div style={{fontFamily:"monospace",background:"#0f0f14",color:"#e2e8f0",fontSize:12,display:"flex",flexDirection:"column",height:"100vh"}}&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div style={{background:"#1a1a2e",borderBottom:"1px solid #2d2d44",padding:"8px 16px",flexShrink:0}}&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;div style={{display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:8}}&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;div style={{display:"flex",alignItems:"center",gap:10}}&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;span style={{color:"#f59e0b",fontWeight:"bold",fontSize:14}}&gt;🍯 Honeycomb&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;span style={{color:"#6b7280"}}&gt;Loan Origination Platform&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;span style={C.tag("#22c55e")}&gt;{loans.length} LOANS&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;span style={{color:"#6b7280",fontSize:11}}&gt;Anomaly&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;input type="range" min={0} max={80} value={anomalyRate} onChange={e=&gt;setAnomalyRate(+e.target.value)} style={{width:55}}/&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;span style={{color:"#f59e0b",minWidth:24,fontSize:11}}&gt;{anomalyRate}%&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;span style={{color:"#6b7280",fontSize:11}}&gt;Fraud&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;input type="range" min={0} max={40} value={fraudRate} onChange={e=&gt;setFraudRate(+e.target.value)} style={{width:55}}/&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;span style={{color:"#ef4444",minWidth:24,fontSize:11}}&gt;{fraudRate}%&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;select value={tps} onChange={e=&gt;setTps(+e.target.value)} style={{background:"#1e1e30",color:"#e2e8f0",border:"1px solid #374151",borderRadius:4,padding:"2px 6px",fontSize:11}}&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>{[0.5,1,2,5,10].map(v=&gt;&lt;option key={v} value={v}&gt;{v} TPS&lt;/option&gt;)}</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;/select&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;button onClick={()=&gt;setRunning(r=&gt;!r)} style={{background:running?"#7f1d1d":"#14532d",color:running?"#fca5a5":"#86efac",border:"none",borderRadius:6,padding:"5px 14px",cursor:"pointer",fontFamily:"monospace",fontWeight:"bold",fontSize:12}}&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>{running?"⏹ Stop":"▶ Start"}</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;/button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;button onClick={addLoan} style={{background:"#1e1e30",color:"#a78bfa",border:"1px solid #4c1d95",borderRadius:6,padding:"5px 10px",cursor:"pointer",fontFamily:"monospace"}}&gt;+1&lt;/button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;button onClick={()=&gt;{setLoans([]);setSelected(null);_uid=1;}} style={{background:"#1e1e30",color:"#6b7280",border:"1px solid #374151",borderRadius:6,padding:"5px 10px",cursor:"pointer",fontFamily:"monospace"}}&gt;Clear&lt;/button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div style={{display:"flex",flex:1,overflow:"hidden"}}&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;div style={{width:320,borderRight:"1px solid #2d2d44",display:"flex",flexDirection:"column",flexShrink:0}}&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;div style={{padding:"6px 8px",borderBottom:"1px solid #2d2d44"}}&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;input value={search} onChange={e=&gt;setSearch(e.target.value)} placeholder="Search applicant, branch, ID…" style={{...C.inp,padding:"4px 8px"}}/&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;div style={{overflowY:"auto",flex:1}}&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>{filtered.length===0&amp;&amp;&lt;div style={{color:"#4b5563",textAlign:"center",marginTop:40,fontSize:11}}&gt;Press ▶ Start to generate loans&lt;/div&gt;}</p>
+<p class="p1"><span class="Apple-converted-space">          </span>{filtered.map(l=&gt;&lt;div key={l.id} onClick={()=&gt;setSelected(l.id===selected?null:l.id)}</p>
+<p class="p1"><span class="Apple-converted-space">            </span>style={{padding:"7px 10px",borderBottom:"1px solid #1a1a2e",cursor:"pointer",background:selected===l.id?"#1e1e30":"transparent",borderLeft:"3px solid "+DC[l.decision]}}&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;div style={{display:"flex",justifyContent:"space-between",marginBottom:3}}&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;span style={{color:"#a78bfa",fontWeight:"bold"}}&gt;{l.id}&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;span style={{color:"#9ca3af",fontSize:10}}&gt;{l.applicant}&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;span style={{...C.tag(DC[l.decision]),fontSize:9}}&gt;{l.decision}&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;SpanBar lat={l.stageLat} anomaly={l.anomaly}/&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;div style={{display:"flex",gap:6,marginTop:3,color:"#4b5563",fontSize:10,flexWrap:"wrap"}}&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;span&gt;{l.loanType}&lt;/span&gt;&lt;span&gt;{l.branch}&lt;/span&gt;&lt;span&gt;{fmt$(l.amount)}&lt;/span&gt;&lt;span&gt;⏱{fmtMs(l.totalDur)}&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>{l.fraud!=="none"&amp;&amp;&lt;span style={{color:"#ef4444"}}&gt;⚠fraud&lt;/span&gt;}</p>
+<p class="p1"><span class="Apple-converted-space">              </span>{l.anomaly!=="none"&amp;&amp;&lt;span style={{color:"#f59e0b"}}&gt;⚡anom&lt;/span&gt;}</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;/div&gt;)}</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;div style={{flex:1,display:"flex",flexDirection:"column",overflow:"hidden"}}&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;div style={{display:"flex",gap:2,padding:"8px 10px",borderBottom:"1px solid #2d2d44",flexShrink:0,flexWrap:"wrap"}}&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>{TABS.map(t=&gt;&lt;button key={t.id} onClick={()=&gt;setTab(t.id)}</p>
+<p class="p1"><span class="Apple-converted-space">            </span>style={{background:tab===t.id?"#312e81":"#1e1e30",color:tab===t.id?"#a78bfa":"#6b7280",border:"1px solid "+(tab===t.id?"#4c1d95":"#374151"),borderRadius:6,padding:"4px 10px",cursor:"pointer",fontFamily:"monospace",fontWeight:"bold",fontSize:11}}&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>{t.label}</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;/button&gt;)}</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;div style={{flex:1,overflowY:"auto",padding:14}}&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>{tab==="pipeline"<span class="Apple-converted-space">      </span>&amp;&amp;&lt;TabPipeline loans={loans}/&gt;}</p>
+<p class="p1"><span class="Apple-converted-space">          </span>{tab==="observability" &amp;&amp;&lt;TabObservability loans={loans}/&gt;}</p>
+<p class="p1"><span class="Apple-converted-space">          </span>{tab==="branch"<span class="Apple-converted-space">        </span>&amp;&amp;&lt;TabBranch loans={loans}/&gt;}</p>
+<p class="p1"><span class="Apple-converted-space">          </span>{tab==="fraud" <span class="Apple-converted-space">        </span>&amp;&amp;&lt;TabFraud loans={loans}/&gt;}</p>
+<p class="p1"><span class="Apple-converted-space">          </span>{tab==="scenario"<span class="Apple-converted-space">      </span>&amp;&amp;&lt;TabScenario loans={loans}/&gt;}</p>
+<p class="p1"><span class="Apple-converted-space">          </span>{tab==="canvas"<span class="Apple-converted-space">        </span>&amp;&amp;&lt;TabCanvas loans={loans}/&gt;}</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>{selectedLoan&amp;&amp;&lt;TraceDetail loan={selectedLoan} onClose={()=&gt;setSelected(null)}/&gt;}</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;/div&gt;;</p>
+<p class="p1">}</p>
+<p class="p2"><br></p>
+<p class="p1">ReactDOM.createRoot(document.getElementById('root')).render(&lt;App/&gt;);</p>
+<p class="p1">&lt;/script&gt;</p>
+<p class="p1">&lt;/body&gt;</p>
+<p class="p1">&lt;/html&gt;</p>
+</body>
+</html>
